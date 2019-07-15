@@ -1,5 +1,6 @@
 package guru.gnom.gnom_sms.receivers;
 
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -18,6 +19,7 @@ import guru.gnom.gnom_sms.R;
 import guru.gnom.gnom_sms.activities.SmsListDetailedView;
 import guru.gnom.gnom_sms.constants.Constants;
 import guru.gnom.gnom_sms.services.SaveSmsService;
+import guru.gnom.gnom_sms.utils.Helpers;
 
 /**
  * Created by R Ankit on 24-12-2016.
@@ -78,11 +80,13 @@ public class SmsReceiver extends BroadcastReceiver {
         Bitmap icon = BitmapFactory.decodeResource(context.getResources(),
                 R.mipmap.ic_launcher);
 
+        String NOTIFICATION_CHANNEL_ID = "gnom_sms_notification_channel_id";
+
         NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(context)
+                new NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
                         .setLargeIcon(icon)
                         .setSmallIcon(R.mipmap.ic_launcher)
-                        .setContentTitle(senderNo)
+                        .setContentTitle(Helpers.getContactbyPhoneNumber(context, senderNo))
                         .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
                         .setAutoCancel(true)
                         .setContentText(message);
@@ -100,9 +104,25 @@ public class SmsReceiver extends BroadcastReceiver {
 
         mBuilder.setContentIntent(resultPendingIntent);
 
-        NotificationManager mNotifyMgr =
+        NotificationManager notificationManager =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        mNotifyMgr.notify(mNotificationId, mBuilder.build());
+
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID,
+                    "Channel human readable title",
+                    NotificationManager.IMPORTANCE_HIGH);
+
+            //Configure Notification Channel
+            channel.setDescription("Game Notifications");
+            channel.enableLights(true);
+            channel.enableVibration(true);
+
+            assert notificationManager != null;
+            notificationManager.createNotificationChannel(channel);
+        }
+
+        notificationManager.notify(mNotificationId, mBuilder.build());
 
     }
 

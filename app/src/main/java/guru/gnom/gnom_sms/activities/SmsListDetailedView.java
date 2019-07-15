@@ -32,6 +32,7 @@ import guru.gnom.gnom_sms.receivers.DeliverReceiver;
 import guru.gnom.gnom_sms.receivers.SentReceiver;
 import guru.gnom.gnom_sms.services.SaveSmsService;
 import guru.gnom.gnom_sms.services.UpdateSMSService;
+import guru.gnom.gnom_sms.utils.Helpers;
 import guru.gnom.gnom_sms.utils.OnNewSmsDetailListener;
 import guru.gnom.gnom_sms.utils.OnNewSmsListListener;
 import guru.gnom.gnom_sms.utils.OnSmsSentListener;
@@ -51,6 +52,7 @@ public class SmsListDetailedView extends AppCompatActivity implements View.OnCli
     private String thread_id = "";
     private boolean isUpdated = false;
     private String TAG = "LOGGERR SmsList";
+    private boolean from_sms_receiver = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,11 +77,12 @@ public class SmsListDetailedView extends AppCompatActivity implements View.OnCli
         read = intent.getStringExtra(Constants.READ);
         name = intent.getStringExtra(Constants.NAME);
         thread_id = intent.getStringExtra(Constants.THREAD_ID);
+        from_sms_receiver = intent.getBooleanExtra(Constants.FROM_SMS_RECIEVER, false);
 
         Log.d(TAG, "init: " + _Id + " " + read + " " + thread_id);
 
         if (getSupportActionBar() != null)
-            getSupportActionBar().setTitle(name);
+            getSupportActionBar().setTitle(name != null ? name : Helpers.getContactbyPhoneNumber(this, contact));
 
         recyclerView = (RecyclerView) findViewById(R.id.recyclerview);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
@@ -99,13 +102,19 @@ public class SmsListDetailedView extends AppCompatActivity implements View.OnCli
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
+        setReadSMS();
         switch (item.getItemId()) {
             case android.R.id.home:
-                setReadSMS();
-                Intent intent = new Intent();
-                intent.putExtra("isChanged", isUpdated);
-                setResult(6543, intent);
-                finish();
+                if (from_sms_receiver) {
+                    Intent intent = new Intent(SmsListDetailedView.this, MainActivity.class);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    Intent intent = new Intent();
+                    intent.putExtra("isChanged", isUpdated);
+                    setResult(6543, intent);
+                    finish();
+                }
                 break;
         }
 
@@ -265,9 +274,15 @@ public class SmsListDetailedView extends AppCompatActivity implements View.OnCli
     public void onBackPressed() {
         Log.d(TAG, "onBackPressed: ");
         setReadSMS();
-        Intent intent = new Intent();
-        intent.putExtra("isChanged", isUpdated);
-        setResult(6543, intent);
-        finish();
+        if (from_sms_receiver) {
+            Intent intent = new Intent(SmsListDetailedView.this, MainActivity.class);
+            startActivity(intent);
+            finish();
+        } else {
+            Intent intent = new Intent();
+            intent.putExtra("isChanged", isUpdated);
+            setResult(6543, intent);
+            finish();
+        }
     }
 }

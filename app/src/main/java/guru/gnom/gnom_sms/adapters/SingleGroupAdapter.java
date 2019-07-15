@@ -69,15 +69,13 @@ public class SingleGroupAdapter extends RecyclerView.Adapter<SingleGroupAdapter.
         if (position+1 < dataCursor.getCount()) {
             dataCursor.moveToPosition(position+1);
             if (!getDate(dataCursor.getLong(dataCursor.getColumnIndexOrThrow("date"))).equals(getDate(time))) {
-                Log.d("LOGGERR", "onBindViewHolder: 1 " + position);
+                holder.time.setVisibility(View.VISIBLE);
                 holder.time.setText(getDate(time));
             } else {
-                Log.d("LOGGERR", "onBindViewHolder: 2 "  + position);
                 holder.time.setVisibility(View.GONE);
             }
             dataCursor.moveToPosition(position);
         } else {
-            Log.d("LOGGERR", "onBindViewHolder: 3 " + position);
             holder.time.setVisibility(View.VISIBLE);
             holder.time.setText(getDate(time));
         }

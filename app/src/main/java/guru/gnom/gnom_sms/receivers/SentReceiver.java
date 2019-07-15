@@ -26,27 +26,27 @@ public class SentReceiver extends BroadcastReceiver {
         switch (getResultCode()) {
             case Activity.RESULT_OK:
                 Toast.makeText(context, "SMS Sent", Toast.LENGTH_SHORT).show();
-                onSmsSentListener.onSendListener("ok");
+                if (onSmsSentListener != null) onSmsSentListener.onSendListener("ok");
                 break;
             case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
                 Toast.makeText(context, "Generic failure",
                         Toast.LENGTH_SHORT).show();
-                onSmsSentListener.onSendListener("fail");
+                if (onSmsSentListener != null) onSmsSentListener.onSendListener("fail");
                 break;
             case SmsManager.RESULT_ERROR_NO_SERVICE:
                 Toast.makeText(context, "No service",
                         Toast.LENGTH_SHORT).show();
-                onSmsSentListener.onSendListener("fail");
+                if (onSmsSentListener != null) onSmsSentListener.onSendListener("fail");
                 break;
             case SmsManager.RESULT_ERROR_NULL_PDU:
                 Toast.makeText(context, "Null PDU", Toast.LENGTH_SHORT)
                         .show();
-                onSmsSentListener.onSendListener("fail");
+                if (onSmsSentListener != null) onSmsSentListener.onSendListener("fail");
                 break;
             case SmsManager.RESULT_ERROR_RADIO_OFF:
                 Toast.makeText(context, "No network",
                         Toast.LENGTH_SHORT).show();
-                onSmsSentListener.onSendListener("fail");
+                if (onSmsSentListener != null) onSmsSentListener.onSendListener("fail");
                 break;
         }
 

@@ -47,6 +47,7 @@ public class NewSMSActivity extends AppCompatActivity implements View.OnClickLis
         setContentView(R.layout.send_sms_activity);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+
         init();
     }
 
