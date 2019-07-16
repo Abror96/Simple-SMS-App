@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Manifest.permission.READ_SMS)) {
             } else {
                 ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.READ_SMS},
+                        new String[]{Manifest.permission.READ_SMS, Manifest.permission.READ_PHONE_STATE},
                         Constants.MY_PERMISSIONS_REQUEST_READ_SMS);
             }
 

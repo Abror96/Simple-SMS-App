@@ -257,7 +257,11 @@ public class SmsListDetailedView extends AppCompatActivity implements View.OnCli
 
         SmsManager sms = SmsManager.getDefault();
         Log.d(TAG, "sendSMSNow: " + contact + " " + message);
-        sms.sendTextMessage(contact, null, message, sentPI, deliveredPI);
+        try {
+            sms.sendTextMessage(contact, null, message, sentPI, deliveredPI);
+        } catch (Exception e) {
+            Toast.makeText(getApplicationContext(), "Null PDU", Toast.LENGTH_LONG).show();
+        }
 
         ContentValues values = new ContentValues();
         values.put("address", contact);
