@@ -47,6 +47,11 @@ import guru.gnom.gnom_sms.constants.Constants;
 import guru.gnom.gnom_sms.services.SaveSmsService;
 import guru.gnom.gnom_sms.utils.OnNewSmsListListener;
 
+import static android.Manifest.permission.READ_CONTACTS;
+import static android.Manifest.permission.READ_SMS;
+import static android.Manifest.permission.SEND_SMS;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static guru.gnom.gnom_sms.constants.Constants.MY_PERMISSIONS_REQUEST_READ_SMS;
 import static guru.gnom.gnom_sms.utils.Helpers.getContactbyPhoneNumber;
 
 
@@ -84,32 +89,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         recyclerView.setLayoutManager(linearLayoutManager);
         fab.setOnClickListener(this);
 
-        if (checkDefaultSettings())
-            checkPermissions();
-
+        checkDefaultSettings();
 
     }
 
     private void checkPermissions() {
 
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.READ_SMS)
-                != PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    Manifest.permission.READ_SMS)) {
-            } else {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.READ_SMS, Manifest.permission.READ_PHONE_STATE},
-                        Constants.MY_PERMISSIONS_REQUEST_READ_SMS);
-            }
-
-        }
-
-
-        int permissionCheck = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.READ_CONTACTS);
-        if (permissionCheck == 0) {
-            // update list
+        if (
+                ActivityCompat.checkSelfPermission(this, READ_SMS) != PERMISSION_GRANTED
+                        && ActivityCompat.checkSelfPermission(this, SEND_SMS) != PERMISSION_GRANTED
+                        && ActivityCompat.checkSelfPermission(this, READ_CONTACTS) != PERMISSION_GRANTED)
+        {
+            requestPermissions(new String[]{READ_SMS, SEND_SMS, READ_CONTACTS}, MY_PERMISSIONS_REQUEST_READ_SMS);
+        } else {
             loadSms();
         }
 
@@ -122,40 +114,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-    private boolean checkDefaultSettings() {
-
-        boolean isDefault = false;
-
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
-
-            if (!Telephony.Sms.getDefaultSmsPackage(this).equals(getPackageName())) {
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                builder.setMessage("This app is not set as your default messaging app. Do you want to set it as default?")
-                        .setCancelable(false)
-                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                                checkPermissions();
-                            }
-                        })
-                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                            @TargetApi(19)
-                            public void onClick(DialogInterface dialog, int id) {
-                                Intent intent = new Intent(Telephony.Sms.Intents.ACTION_CHANGE_DEFAULT);
-                                intent.putExtra(Telephony.Sms.Intents.EXTRA_PACKAGE_NAME, getPackageName());
-                                startActivity(intent);
-                                checkPermissions();
-                            }
-                        });
-                builder.show();
-
-                isDefault = false;
-            } else
-                isDefault = true;
+    private void checkDefaultSettings() {
+        if (!Telephony.Sms.getDefaultSmsPackage(this).equals(getPackageName())) {
+            Intent intent = new Intent(Telephony.Sms.Intents.ACTION_CHANGE_DEFAULT);
+            intent.putExtra(Telephony.Sms.Intents.EXTRA_PACKAGE_NAME, getPackageName());
+            startActivityForResult(intent, 3498);
+        } else {
+            loadSms();
         }
-        return isDefault;
     }
 
 
@@ -171,7 +137,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (view.getId()) {
 
             case R.id.fab_new:
-
                 startActivityForResult(new Intent(this, NewSMSActivity.class), 4378);
                 break;
         }
@@ -181,12 +146,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         switch (requestCode) {
-            case Constants.MY_PERMISSIONS_REQUEST_READ_SMS: {
+            case MY_PERMISSIONS_REQUEST_READ_SMS: {
                 if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                        && grantResults[0] == PERMISSION_GRANTED) {
                     if (ContextCompat.checkSelfPermission(this,
                             Manifest.permission.READ_CONTACTS)
-                            != PackageManager.PERMISSION_GRANTED) {
+                            != PERMISSION_GRANTED) {
                         if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                                 Manifest.permission.READ_CONTACTS)) {
                         } else {
@@ -233,6 +198,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (isUpdated) {
                 loadSms();
             }
+        }
+        if (requestCode == 3498) {
+            checkPermissions();
         }
     }
 
